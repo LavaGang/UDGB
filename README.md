@@ -1,8 +1,9 @@
+
 ### GENERAL INFORMATION:
 
 - Unity Dependencies Generator Bot used for Generating the ZIP Archives in [Unity-Runtime-Libraries](https://github.com/LavaGang/Unity-Runtime-Libraries).
 
-- USAGE: "udgb.exe <UnityVersion>"
+- USAGE: "udgb.exe <Unity_Version>"
 
 ---
 
