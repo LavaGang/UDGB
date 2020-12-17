@@ -11,5 +11,8 @@ UDGB is licensed under the Apache License, Version 2.0. See [LICENSE](https://gi
 Third-party tool used bundled in binary form:
 - [7-Zip](https://www.7-zip.org/) is licensed under the GNU LGPL License. See [LICENSE](https://www.7-zip.org/license.txt) for the full License.
 
+External Archive downloaded and extracted from at runtime:
+- [Unity](https://unity3d.com/) is a trademark or a registered trademark of Unity Technologies or its affiliates in the U.S. and elsewhere.
+
 UDGB is not sponsored by, affiliated with or endorsed by Unity Technologies or its affiliates.  
 "Unity" is a trademark or a registered trademark of Unity Technologies or its affiliates in the U.S. and elsewhere.
