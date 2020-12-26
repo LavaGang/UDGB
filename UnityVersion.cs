@@ -1,25 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace UDGB
 {
-    public class UnityVersion
+    internal class UnityVersion
     {
-        public static List<UnityVersion> VersionTbl = new List<UnityVersion>();
-        public string Version = null;
-        public string DownloadURL = null;
+        internal static List<UnityVersion> VersionTbl = new List<UnityVersion>();
+        internal static string UnityURL = "https://unity3d.com/get-unity/download/archive";
+        internal string Version = null;
+        internal string DownloadURL = null;
 
-        public UnityVersion(string version, string downloadurl) { Version = version; DownloadURL = downloadurl; }
+        internal UnityVersion(string version, string downloadurl) { Version = version; DownloadURL = downloadurl; }
 
-        public static void Refresh()
+        internal static void Refresh()
         {
             if (VersionTbl.Count > 0)
                 VersionTbl.Clear();
-            string unity_url = "https://unity3d.com/get-unity/download/archive";
-            string pageSource = Program.webClient.DownloadString(unity_url);
+            string pageSource = Program.webClient.DownloadString(UnityURL);
             if (string.IsNullOrEmpty(pageSource))
                 return;
             string[] pageSource_Lines = pageSource.Split(new[] { '\r', '\n' });
@@ -49,11 +45,10 @@ namespace UDGB
                     continue;
                 string found_version = found_url.Substring(found_url.LastIndexOf("UnitySetup64-") + setup_identifier.Length + 1);
                 found_version = found_version.Substring(0, found_version.LastIndexOf("f"));
-                //Logger.Log(found_version + "  -  " + found_url);
                 VersionTbl.Add(new UnityVersion(found_version, found_url));
                 is_looking_for_whats_new = false;
             }
-            //Logger.Spacer();
+            VersionTbl.Reverse();
         }
     }
 }

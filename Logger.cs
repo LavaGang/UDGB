@@ -3,11 +3,12 @@ using System.IO;
 
 namespace UDGB
 {
-    public class Logger
+    internal class Logger
     {
         private static bool ShouldLogToFile = false;
         private static FileStream fs = null;
         private static StreamWriter sr = null;
+
         static Logger()
         {
             if (!ShouldLogToFile)
@@ -17,7 +18,8 @@ namespace UDGB
             fs = File.OpenWrite("output.log");
             sr = new StreamWriter(fs);
         }
-        public static void Log(string str)
+
+        internal static void Msg(string str)
         {
             Console.WriteLine(str);
             if (!ShouldLogToFile || (sr == null))
@@ -25,8 +27,8 @@ namespace UDGB
             sr.WriteLine(str);
             sr.Flush();
         }
-        
-        public static void LogError(string str)
+
+        internal static void Error(string str)
         {
             var oldColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Red;
@@ -37,16 +39,5 @@ namespace UDGB
             sr.WriteLine(str);
             sr.Flush();
         }
-
-        public static void Spacer()
-        {
-            Console.Write("\n");
-            if (!ShouldLogToFile || (sr == null))
-                return;
-            sr.Write("\n");
-            sr.Flush();
-        }
-
-        public static void Flush() { if (ShouldLogToFile && (sr != null)) sr.Flush(); }
     }
 }
