@@ -11,10 +11,12 @@ namespace UDGB
     public static class Program
     {
         internal static WebClient webClient = new WebClient();
-        private static bool allmode_break_on_error = false;
-        private static int allmode_refresh_interval = 15; // In Seconds
         private static string cache_path = null;
         private static string temp_folder_path = null;
+        private static bool allmode_break_on_error = false;
+        private static int allmode_refresh_interval = 15; // In Seconds
+        private static bool allmode_single_variation = true;
+        private static string allmode_variation = "2018.3";
 
         public static int Main(string[] args)
         {
@@ -90,6 +92,11 @@ namespace UDGB
             List<UnityVersion> sortedversiontbl = new List<UnityVersion>();
             foreach (UnityVersion version in UnityVersion.VersionTbl)
             {
+                if (allmode_single_variation && !version.Version.StartsWith(allmode_variation))
+                {
+                    Logger.Msg(version.Version + " is not a " + allmode_variation + " Variation! Skipping...");
+                    continue;
+                }
                 string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
                 if (File.Exists(zip_path))
                 {
