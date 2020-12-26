@@ -157,7 +157,7 @@ namespace UDGB
                     if (error_count > 0)
                         Logger.Error(error_count.ToString() + " Failures");
                     if (success_count > 0)
-                        Logger.Msg(error_count.ToString() + " Successful Zip Creations");
+                        Logger.Msg(success_count.ToString() + " Successful Zip Creations");
                 }
             }
             else
