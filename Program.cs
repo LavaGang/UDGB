@@ -14,7 +14,7 @@ namespace UDGB
         private static string cache_path = null;
         private static string temp_folder_path = null;
         private static bool allmode_break_on_error = false;
-        private static int allmode_refresh_interval = 15; // In Seconds
+        private static int allmode_refresh_interval = 5; // In Seconds
         private static bool allmode_single_variation = false;
         private static string allmode_variation = "2018.3";
 
