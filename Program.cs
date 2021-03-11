@@ -173,7 +173,7 @@ namespace UDGB
             if (version.Version.StartsWith("3."))
                 folder_path = "Data/PlaybackEngines/windows64standaloneplayer/Managed/";
 
-           ProcessStartInfo p = new ProcessStartInfo();
+            ProcessStartInfo p = new ProcessStartInfo();
             p.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "7z/7z.exe");
             p.Arguments = "e \"" + cache_path + "\" -o\"" + temp_folder_path + "\" \"" + folder_path + "*.dll\"";
 
