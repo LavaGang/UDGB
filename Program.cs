@@ -168,10 +168,15 @@ namespace UDGB
         private static bool ExtractDependencies(UnityVersion version)
         {
             Logger.Msg("Extracting Dependencies...");
-            string folder_path = "Editor/Data/PlaybackEngines/windowsstandalonesupport/Variations/win64_nondevelopment_mono/Data/Managed/*.dll";
-            ProcessStartInfo p = new ProcessStartInfo();
+
+            string folder_path = "Editor/Data/PlaybackEngines/windowsstandalonesupport/Variations/win64_nondevelopment_mono/Data/Managed/";
+            if (version.Version.StartsWith("3."))
+                folder_path = "Data/PlaybackEngines/windows64standaloneplayer/Managed/";
+
+           ProcessStartInfo p = new ProcessStartInfo();
             p.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "7z/7z.exe");
-            p.Arguments = "e \"" + cache_path + "\" -o\"" + temp_folder_path + "\" \"" + folder_path + "\"";
+            p.Arguments = "e \"" + cache_path + "\" -o\"" + temp_folder_path + "\" \"" + folder_path + "*.dll\"";
+
             Process x = Process.Start(p);
             x.WaitForExit();
             if (x.ExitCode != 0)
