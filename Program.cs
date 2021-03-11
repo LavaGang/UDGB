@@ -201,6 +201,8 @@ namespace UDGB
             string folder_path = "Editor/Data/PlaybackEngines/windowsstandalonesupport/Variations/win64_nondevelopment_mono/Data/Managed/";
             if (version.Version.StartsWith("3."))
                 folder_path = "Data/PlaybackEngines/windows64standaloneplayer/Managed/";
+            else if (version.Version.StartsWith("4."))
+                folder_path = "Data/PlaybackEngines/windowsstandalonesupport/Managed/";
 
             ProcessStartInfo p = new ProcessStartInfo();
             p.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "7z/7z.exe");
