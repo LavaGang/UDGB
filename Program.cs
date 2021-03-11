@@ -103,6 +103,7 @@ namespace UDGB
                     Logger.Msg(version.Version + " Zip Already Exists! Skipping...");
                     continue;
                 }
+                Logger.Msg(version.Version + " Zip Not Found. Adding to Download List...");
                 sortedversiontbl.Add(version);
             }
             int error_count = 0;
