@@ -203,9 +203,15 @@ namespace UDGB
                 folder_path = "Data/PlaybackEngines/windows64standaloneplayer/Managed/";
             else if (version.Version.StartsWith("4."))
             {
-                //folder_path = "Data/PlaybackEngines/windowsstandalonesupport/Managed/";
-                folder_path = "Data/PlaybackEngines/windows64standaloneplayer/Managed/";
+                if (version.Version.StartsWith("4.5")
+                    || version.Version.StartsWith("4.6")
+                    || version.Version.StartsWith("4.7"))
+                    folder_path = "Data/PlaybackEngines/windowsstandalonesupport/Managed/";
+                else
+                    folder_path = "Data/PlaybackEngines/windows64standaloneplayer/Managed/";
             }
+            else if (version.Version.StartsWith("5.3"))
+                folder_path = "Editor/Data/PlaybackEngines/WebPlayer/Managed/";
 
             ProcessStartInfo p = new ProcessStartInfo();
             p.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "7z/7z.exe");
