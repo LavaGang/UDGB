@@ -76,7 +76,7 @@ namespace UDGB
                     continue;
 
                 string found_version = subsourceline2.Substring(0, extension_identifier_index);
-                if (string.IsNullOrEmpty(found_version) || !found_version.Contains("."))
+                if (string.IsNullOrEmpty(found_version) || found_version.Contains("Samsung"))
                     continue;
 
                 if (found_version.Contains("f"))

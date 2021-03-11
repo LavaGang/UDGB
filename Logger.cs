@@ -5,7 +5,7 @@ namespace UDGB
 {
     internal class Logger
     {
-        private static bool ShouldLogToFile = false;
+        private static bool ShouldLogToFile = true;
         private static FileStream fs = null;
         private static StreamWriter sr = null;
 
