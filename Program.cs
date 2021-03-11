@@ -46,6 +46,7 @@ namespace UDGB
                 Logger.Error("Failed to Get Unity Versions List from " + UnityVersion.UnityURL);
                 return -1;
             }
+
             string requested_version = args[0];
             if (requested_version.Equals("--all"))
                 return All();
@@ -60,6 +61,13 @@ namespace UDGB
                 Logger.Error("Failed to find requested Unity Version: " + requested_version);
                 return -1;
             }
+
+            if (version.Version.StartsWith("2020") && !version.Version.StartsWith("2020.1"))
+            {
+                Logger.Error(version.Version + " is Incompatible with Extraction Method!");
+                return -1;
+            }
+
             string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (requested_version + ".zip"));
             Logger.Msg("Downloading " + version.DownloadURL);
             bool was_error = false;
@@ -76,11 +84,13 @@ namespace UDGB
                 Logger.Error(x.ToString());
                 was_error = true;
             }
+
             Logger.Msg("Cleaning up...");
             if (Directory.Exists(temp_folder_path))
                 Directory.Delete(temp_folder_path, true);
             if (File.Exists(cache_path))
                 File.Delete(cache_path);
+
             if (was_error)
                 return 1;
             Logger.Msg(requested_version + " Zip Successfully Created!");
@@ -90,6 +100,7 @@ namespace UDGB
         private static int All()
         {
             List<UnityVersion> sortedversiontbl = new List<UnityVersion>();
+
             foreach (UnityVersion version in UnityVersion.VersionTbl)
             {
                 if (allmode_single_variation && !version.Version.StartsWith(allmode_variation))
@@ -97,27 +108,29 @@ namespace UDGB
                     Logger.Msg(version.Version + " is not a " + allmode_variation + " Variation! Skipping...");
                     continue;
                 }
+
+                if (version.Version.StartsWith("2020") && !version.Version.StartsWith("2020.1"))
+                {
+                    Logger.Msg(version.Version + " is Incompatible with Current Extraction Method! Skipping...");
+                    continue;
+                }
+
                 string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
                 if (File.Exists(zip_path))
                 {
                     Logger.Msg(version.Version + " Zip Already Exists! Skipping...");
                     continue;
                 }
-                Logger.Msg(version.Version + " Zip Not Found. Adding to Download List...");
+
                 sortedversiontbl.Add(version);
             }
+
             int error_count = 0;
             if (sortedversiontbl.Count >= 1)
             {
                 int success_count = 0;
                 foreach (UnityVersion version in sortedversiontbl)
                 {
-                    string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
-                    if (File.Exists(zip_path))
-                    {
-                        Logger.Msg(version.Version + " Zip Already Exists! Skipping...");
-                        continue;
-                    }
                     bool was_error = false;
                     Logger.Msg("Downloading " + version.DownloadURL);
                     try
@@ -126,18 +139,23 @@ namespace UDGB
                         if (!ExtractDependencies(version))
                             was_error = true;
                         else
+                        {
+                            string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
                             CreateZip(zip_path);
+                        }
                     }
                     catch (Exception x)
                     {
                         Logger.Error(x.ToString());
                         was_error = true;
                     }
+
                     Logger.Msg("Cleaning up...");
                     if (Directory.Exists(temp_folder_path))
                         Directory.Delete(temp_folder_path, true);
                     if (File.Exists(cache_path))
                         File.Delete(cache_path);
+
                     if (!was_error)
                     {
                         success_count++;
@@ -150,9 +168,11 @@ namespace UDGB
                             break;
                         Logger.Msg("Failure Detected! Skipping to Next Version...");
                     }
+
                     Logger.Msg("Cooldown Active for " + allmode_refresh_interval.ToString() + " seconds...");
                     Thread.Sleep(allmode_refresh_interval * 1000);
                 }
+
                 if (!allmode_break_on_error)
                 {
                     if (error_count > 0)
@@ -163,6 +183,7 @@ namespace UDGB
             }
             else
                 Logger.Msg("All Unity Dependencies Successfully Checked and Downloaded!");
+
             return ((error_count <= 0) ? -1 : 0);
         }
 
