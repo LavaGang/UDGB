@@ -27,7 +27,7 @@ namespace UDGB
             
             foreach (string sourceline in pageSource_Lines)
             {
-                if (string.IsNullOrEmpty(sourceline))
+                if (string.IsNullOrEmpty(sourceline) || sourceline.Contains("Samsung"))
                     continue;
 
                 string href_identifier = $"<a href={QuoteStr}https://download.unity3d.com/";
@@ -76,7 +76,7 @@ namespace UDGB
                     continue;
 
                 string found_version = subsourceline2.Substring(0, extension_identifier_index);
-                if (string.IsNullOrEmpty(found_version) || found_version.Contains("Samsung"))
+                if (string.IsNullOrEmpty(found_version))
                     continue;
 
                 if (found_version.Contains("f"))
