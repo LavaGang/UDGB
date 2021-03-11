@@ -68,7 +68,13 @@ namespace UDGB
                 return -1;
             }
 
-            string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (requested_version + ".zip"));
+            string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
+            if (File.Exists(zip_path))
+            {
+                Logger.Error(version.Version + " Zip Already Exists!");
+                return -1;
+            }
+            
             Logger.Msg("Downloading " + version.DownloadURL);
             bool was_error = false;
             try
@@ -105,23 +111,24 @@ namespace UDGB
             {
                 if (allmode_single_variation && !version.Version.StartsWith(allmode_variation))
                 {
-                    Logger.Msg(version.Version + " is not a " + allmode_variation + " Variation! Skipping...");
+                    Logger.Warning(version.Version + " is not a " + allmode_variation + " Variation! Skipping...");
                     continue;
                 }
 
                 if (version.Version.StartsWith("2020") && !version.Version.StartsWith("2020.1"))
                 {
-                    Logger.Msg(version.Version + " is Incompatible with Current Extraction Method! Skipping...");
+                    Logger.Warning(version.Version + " is Incompatible with Current Extraction Method! Skipping...");
                     continue;
                 }
 
                 string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
                 if (File.Exists(zip_path))
                 {
-                    Logger.Msg(version.Version + " Zip Already Exists! Skipping...");
+                    Logger.Warning(version.Version + " Zip Already Exists! Skipping...");
                     continue;
                 }
 
+                Logger.Msg(version.Version + " Zip Doesn't Exist! Adding to Download List...");
                 sortedversiontbl.Add(version);
             }
 
@@ -166,7 +173,7 @@ namespace UDGB
                         error_count++;
                         if (allmode_break_on_error)
                             break;
-                        Logger.Msg("Failure Detected! Skipping to Next Version...");
+                        Logger.Warning("Failure Detected! Skipping to Next Version...");
                     }
 
                     Logger.Msg("Cooldown Active for " + allmode_refresh_interval.ToString() + " seconds...");

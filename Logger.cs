@@ -28,6 +28,18 @@ namespace UDGB
             sr.Flush();
         }
 
+        internal static void Warning(string str)
+        {
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(str);
+            Console.ForegroundColor = oldColor;
+            if (!ShouldLogToFile || (sr == null))
+                return;
+            sr.WriteLine(str);
+            sr.Flush();
+        }
+
         internal static void Error(string str)
         {
             var oldColor = Console.ForegroundColor;
