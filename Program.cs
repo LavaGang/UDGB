@@ -66,7 +66,7 @@ namespace UDGB
             try
             {
                 webClient.DownloadFile(version.DownloadURL, cache_path);
-                if (!ExtractDependencies())
+                if (!ExtractDependencies(version))
                     was_error = true;
                 else
                     CreateZip(zip_path);
@@ -122,7 +122,7 @@ namespace UDGB
                     try
                     {
                         webClient.DownloadFile(version.DownloadURL, cache_path);
-                        if (!ExtractDependencies())
+                        if (!ExtractDependencies(version))
                             was_error = true;
                         else
                             CreateZip(zip_path);
@@ -165,7 +165,7 @@ namespace UDGB
             return ((error_count <= 0) ? -1 : 0);
         }
 
-        private static bool ExtractDependencies()
+        private static bool ExtractDependencies(UnityVersion version)
         {
             Logger.Msg("Extracting Dependencies...");
             string folder_path = "Editor/Data/PlaybackEngines/windowsstandalonesupport/Variations/win64_nondevelopment_mono/Data/Managed/*.dll";
