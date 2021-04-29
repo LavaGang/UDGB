@@ -1,7 +1,9 @@
 
 ### GENERAL INFORMATION:
 
-- Unity Dependencies Generator Bot used for Generating the ZIP Archives in [Unity-Runtime-Libraries](https://github.com/LavaGang/Unity-Runtime-Libraries) and [Unity-Android-Il2Cpp-Libraries](https://github.com/LavaGang/Unity-Android-Il2Cpp-Libraries).
+- Unity Dependencies Generator Bot used for Generating the ZIP Archives in:  
+[Unity-Runtime-Libraries](https://github.com/LavaGang/Unity-Runtime-Libraries)  
+[Unity-Android-Il2Cpp-Libraries](https://github.com/LavaGang/Unity-Android-Il2Cpp-Libraries)
 
 - USAGE: "udgb.exe <Unity_Version>"
 
