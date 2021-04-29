@@ -191,13 +191,8 @@ namespace UDGB
 
             if (so_mode)
             {
-                string rootpath = null; 
-
-                rootpath = "$INSTDIR$*";
+                string rootpath = "$INSTDIR$*";
                 internal_path = $"{rootpath}/Variations/il2cpp/Release/Libs/*/";
-
-                Logger.Msg($"Root Path: {rootpath}");
-                Logger.Msg($"Internal Path: {internal_path}");
 
                 string filename = "libunity.so";
                 if (!ArchiveHandler.ExtractFiles(temp_folder_path, cache_path, Path.Combine(internal_path, filename), true))
