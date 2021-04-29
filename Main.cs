@@ -80,32 +80,46 @@ namespace UDGB
             return ProcessUnityVersion(version);
         }
 
+        private static bool VersionFilter(UnityVersion version, bool should_error = true)
+        {
+            if ((version.Version.StartsWith("2020")
+                    && !version.Version.StartsWith("2020.1"))
+                    || version.Version.StartsWith("2021"))
+            {
+                if (should_error)
+                    Logger.Error(version.Version + " is Incompatible with Current Extraction Method!");
+                else
+                    Logger.Warning(version.Version + " is Incompatible with Current Extraction Method!");
+                return false;
+            }
+
+            if ((OperationMode == OperationModes.Android_Il2Cpp)
+                || (OperationMode == OperationModes.Android_Mono))
+            {
+                if (version.Version.StartsWith("5.2")
+                    || version.Version.StartsWith("5.1")
+                    || version.Version.StartsWith("5.0")
+                    || version.Version.StartsWith("4")
+                    || version.Version.StartsWith("3"))
+                {
+                    if (should_error)
+                        Logger.Error(version.Version + " Has No Android Support Installer!");
+                    else
+                        Logger.Warning(version.Version + " Has No Android Support Installer!");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private static bool ProcessAll()
         {
             List<UnityVersion> sortedversiontbl = new List<UnityVersion>();
             foreach (UnityVersion version in UnityVersion.VersionTbl)
             {
-                if ((version.Version.StartsWith("2020")
-                    && !version.Version.StartsWith("2020.1"))
-                    || version.Version.StartsWith("2021"))
-                {
-                    Logger.Warning(version.Version + " is Incompatible with Current Extraction Method! Skipping...");
+                if (!VersionFilter(version, false))
                     continue;
-                }
-
-                if ((OperationMode == OperationModes.Android_Il2Cpp)
-                    || (OperationMode == OperationModes.Android_Mono))
-                {
-                    if (version.Version.StartsWith("5.2")
-                        || version.Version.StartsWith("5.1")
-                        || version.Version.StartsWith("5.0")
-                        || version.Version.StartsWith("4")
-                        || version.Version.StartsWith("3"))
-                    {
-                        Logger.Warning(version.Version + " Has No Android Support Installer! Skipping...");
-                        continue;
-                    }
-                }
 
                 string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
                 if (File.Exists(zip_path))
@@ -142,25 +156,8 @@ namespace UDGB
 
         private static bool ProcessUnityVersion(UnityVersion version)
         {
-            if (version.Version.StartsWith("2020") && !version.Version.StartsWith("2020.1"))
-            {
-                Logger.Error(version.Version + " is Incompatible with Extraction Method!");
+            if (!VersionFilter(version))
                 return false;
-            }
-
-            if ((OperationMode == OperationModes.Android_Il2Cpp)
-                || (OperationMode == OperationModes.Android_Mono))
-            {
-                if (version.Version.StartsWith("5.2")
-                    || version.Version.StartsWith("5.1")
-                    || version.Version.StartsWith("5.0")
-                    || version.Version.StartsWith("4")
-                    || version.Version.StartsWith("3"))
-                {
-                    Logger.Error(version.Version + " Has No Android Support Installer!");
-                    return false;
-                }
-            }
 
             string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
             if (File.Exists(zip_path))
