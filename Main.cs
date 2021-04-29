@@ -12,8 +12,15 @@ namespace UDGB
         internal static WebClient webClient = new WebClient();
         private static string cache_path = null;
         private static string temp_folder_path = null;
-        private static bool so_mode = false;
         private static int cooldown_interval = 5; // In Seconds
+
+        internal enum OperationModes
+        {
+            Normal,
+            Android_Il2Cpp,
+            Android_Mono
+        }
+        private static OperationModes OperationMode = OperationModes.Normal;
 
         public static int Main(string[] args)
         {
@@ -38,12 +45,18 @@ namespace UDGB
             }
 
             string requested_version = args[0];
-            string so_identifier = ";libunity.so";
-            so_mode = requested_version.EndsWith(so_identifier);
-            if (so_mode)
-                requested_version = requested_version.Substring(0, requested_version.LastIndexOf(so_identifier));
 
-            UnityVersion.Refresh(so_mode);
+            OperationMode = (requested_version.EndsWith(";android") 
+                || requested_version.EndsWith(";android_il2cpp"))
+                ? OperationModes.Android_Il2Cpp
+                : (requested_version.EndsWith(";android_mono") 
+                ? OperationModes.Android_Mono 
+                : OperationModes.Normal);
+
+            if (OperationMode != OperationModes.Normal)
+                requested_version = requested_version.Substring(0, requested_version.LastIndexOf(";"));
+
+            UnityVersion.Refresh();
             if (UnityVersion.VersionTbl.Count <= 0)
             {
                 Logger.Error("Failed to Get Unity Versions List from " + UnityVersion.UnityURL);
@@ -78,7 +91,8 @@ namespace UDGB
                     continue;
                 }
 
-                if (so_mode)
+                if ((OperationMode == OperationModes.Android_Il2Cpp)
+                    || (OperationMode == OperationModes.Android_Mono))
                 {
                     if (version.Version.StartsWith("5.2")
                         || version.Version.StartsWith("5.1")
@@ -132,7 +146,8 @@ namespace UDGB
                 return false;
             }
 
-            if (so_mode)
+            if ((OperationMode == OperationModes.Android_Il2Cpp)
+                || (OperationMode == OperationModes.Android_Mono))
             {
                 if (version.Version.StartsWith("5.2")
                     || version.Version.StartsWith("5.1")
@@ -150,7 +165,8 @@ namespace UDGB
                 File.Delete(zip_path);
 
             string downloadurl = version.DownloadURL;
-            if (so_mode)
+            if ((OperationMode == OperationModes.Android_Il2Cpp)
+                || (OperationMode == OperationModes.Android_Mono))
             {
                 downloadurl = downloadurl.Substring(0, downloadurl.LastIndexOf("/"));
                 downloadurl = $"{downloadurl.Substring(0, downloadurl.LastIndexOf("/"))}/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-{version.FullVersion}.exe";
@@ -161,7 +177,7 @@ namespace UDGB
             try
             {
                 webClient.DownloadFile(downloadurl, cache_path);
-                was_error = !ExtractDependencies(version);
+                was_error = !ExtractFilesFromArchive(version);
                 Thread.Sleep(1000);
                 if (!was_error)
                     ArchiveHandler.CreateZip(temp_folder_path, zip_path);
@@ -184,53 +200,69 @@ namespace UDGB
             return true;
         }
 
-        private static bool ExtractDependencies(UnityVersion version)
+        private static bool ExtractFilesFromArchive(UnityVersion version)
         {
-            Logger.Msg("Extracting Dependencies...");
-            string internal_path = null;
-
-            if (so_mode)
+            switch (OperationMode)
             {
-                string rootpath = "$INSTDIR$*";
-                internal_path = $"{rootpath}/Variations/il2cpp/Release/Libs/*/";
+                // Unity Dependencies for Unstripping Only
+                case OperationModes.Normal:
+                default:
+                    string internal_path = "Editor/Data/PlaybackEngines/windowsstandalonesupport/Variations/win64_nondevelopment_mono/Data/";
+                    if (version.Version.StartsWith("3."))
+                        internal_path = "Data/PlaybackEngines/windows64standaloneplayer/";
+                    else if (version.Version.StartsWith("4."))
+                    {
+                        if (version.Version.StartsWith("4.5")
+                            || version.Version.StartsWith("4.6")
+                            || version.Version.StartsWith("4.7"))
+                            internal_path = "Data/PlaybackEngines/windowsstandalonesupport/";
+                        else
+                            internal_path = "Data/PlaybackEngines/windows64standaloneplayer/";
+                    }
+                    else if (version.Version.StartsWith("5.3"))
+                        internal_path = "Editor/Data/PlaybackEngines/WebPlayer/";
 
-                string filename = "libunity.so";
-                if (!ArchiveHandler.ExtractFiles(temp_folder_path, cache_path, Path.Combine(internal_path, filename), true))
-                    return false;
+                    Logger.Msg("Extracting DLLs from Archive...");
+                    return ArchiveHandler.ExtractFiles(temp_folder_path, cache_path, internal_path + "Managed/*.dll");
 
-                Logger.Msg("Fixing Folder Structure...");
-                foreach (string filepath in Directory.GetFiles(temp_folder_path, filename, SearchOption.AllDirectories))
-                {
-                    Logger.Msg($"Moving {filepath}");
-                    DirectoryInfo dir = new DirectoryInfo(Path.GetDirectoryName(filepath));
-                    string newpath = Path.Combine(temp_folder_path, dir.Name);
-                    if (!Directory.Exists(newpath))
-                        Directory.CreateDirectory(newpath);
-                    File.Move(filepath, Path.Combine(newpath, filename));
-                }
 
-                string rootfolder = Directory.GetDirectories(temp_folder_path, rootpath).First();
-                Logger.Msg($"Removing {rootfolder}");
-                Directory.Delete(rootfolder, true);
+                // Full Android Libraries
+                case OperationModes.Android_Il2Cpp:
+                case OperationModes.Android_Mono:
+                    string rootpath = "$INSTDIR$*";
+                    string basefolder = $"{rootpath}/Variations/{((OperationMode == OperationModes.Android_Il2Cpp) ? "il2cpp" : "mono")}/";
+                    string libfilename = "libunity.so";
 
-                return true;
+                    Logger.Msg($"Extracting {libfilename} from Archive...");
+                    if (!ArchiveHandler.ExtractFiles(temp_folder_path, cache_path, $"{basefolder}Release/Libs/*/{libfilename}", true))
+                        return false;
+
+                    Logger.Msg("Fixing Folder Structure...");
+                    string libsfolderpath = Path.Combine(temp_folder_path, "Libs");
+                    if (!Directory.Exists(libsfolderpath))
+                        Directory.CreateDirectory(libsfolderpath);
+                    foreach (string filepath in Directory.GetFiles(temp_folder_path, libfilename, SearchOption.AllDirectories))
+                    {
+                        Logger.Msg($"Moving {filepath}");
+                        DirectoryInfo dir = new DirectoryInfo(Path.GetDirectoryName(filepath));
+
+                        string newpath = Path.Combine(libsfolderpath, dir.Name);
+                        if (!Directory.Exists(newpath))
+                            Directory.CreateDirectory(newpath);
+                        File.Move(filepath, Path.Combine(newpath, Path.GetFileName(filepath)));
+                    }
+
+                    string rootfolder = Directory.GetDirectories(temp_folder_path, rootpath).First();
+                    Logger.Msg($"Removing {rootfolder}");
+                    Directory.Delete(rootfolder, true);
+
+                    Logger.Msg($"Extracting Managed Folder...");
+                    string newmanagedfolder = Path.Combine(temp_folder_path, "Managed");
+                    if (!Directory.Exists(newmanagedfolder))
+                        Directory.CreateDirectory(newmanagedfolder);
+
+                    return ArchiveHandler.ExtractFiles(newmanagedfolder, cache_path, basefolder + "Managed/*.dll");
             }
-
-            internal_path = "Editor/Data/PlaybackEngines/windowsstandalonesupport/Variations/win64_nondevelopment_mono/Data/";
-            if (version.Version.StartsWith("3."))
-                internal_path = "Data/PlaybackEngines/windows64standaloneplayer/";
-            else if (version.Version.StartsWith("4."))
-            {
-                if (version.Version.StartsWith("4.5")
-                    || version.Version.StartsWith("4.6")
-                    || version.Version.StartsWith("4.7"))
-                    internal_path = "Data/PlaybackEngines/windowsstandalonesupport/";
-                else
-                    internal_path = "Data/PlaybackEngines/windows64standaloneplayer/";
-            }
-            else if (version.Version.StartsWith("5.3"))
-                internal_path = "Editor/Data/PlaybackEngines/WebPlayer/";
-            return ArchiveHandler.ExtractFiles(temp_folder_path, cache_path, internal_path + "Managed/*.dll");
         }
     }
 }

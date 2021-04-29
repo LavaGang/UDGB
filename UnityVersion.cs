@@ -13,7 +13,7 @@ namespace UDGB
 
         internal UnityVersion(string version, string fullversion, string downloadurl) { Version = version; FullVersion = fullversion; DownloadURL = downloadurl; }
 
-        internal static void Refresh(bool so_mode)
+        internal static void Refresh()
         {
             if (VersionTbl.Count > 0)
                 VersionTbl.Clear();
