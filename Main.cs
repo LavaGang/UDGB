@@ -85,7 +85,9 @@ namespace UDGB
             List<UnityVersion> sortedversiontbl = new List<UnityVersion>();
             foreach (UnityVersion version in UnityVersion.VersionTbl)
             {
-                if (version.Version.StartsWith("2020") && !version.Version.StartsWith("2020.1"))
+                if ((version.Version.StartsWith("2020")
+                    && !version.Version.StartsWith("2020.1"))
+                    || version.Version.StartsWith("2021"))
                 {
                     Logger.Warning(version.Version + " is Incompatible with Current Extraction Method! Skipping...");
                     continue;
