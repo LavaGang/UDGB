@@ -7,12 +7,13 @@ namespace UDGB
         internal static List<UnityVersion> VersionTbl = new List<UnityVersion>();
         internal static string UnityURL = "https://unity3d.com/get-unity/download/archive";
         internal string Version = null;
+        internal string FullVersion = null;
         internal string DownloadURL = null;
         private static string QuoteStr = "\"";
 
-        internal UnityVersion(string version, string downloadurl) { Version = version; DownloadURL = downloadurl; }
+        internal UnityVersion(string version, string fullversion, string downloadurl) { Version = version; FullVersion = fullversion; DownloadURL = downloadurl; }
 
-        internal static void Refresh()
+        internal static void Refresh(bool so_mode)
         {
             if (VersionTbl.Count > 0)
                 VersionTbl.Clear();
@@ -79,10 +80,11 @@ namespace UDGB
                 if (string.IsNullOrEmpty(found_version))
                     continue;
 
+                string fullversion = found_version;
                 if (found_version.Contains("f"))
                     found_version = found_version.Substring(0, found_version.IndexOf("f"));
 
-                VersionTbl.Add(new UnityVersion(found_version, found_url));
+                VersionTbl.Add(new UnityVersion(found_version, fullversion, found_url));
             }
             
             VersionTbl.Reverse();
