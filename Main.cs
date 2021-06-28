@@ -59,7 +59,7 @@ namespace UDGB
             UnityVersion.Refresh();
             if (UnityVersion.VersionTbl.Count <= 0)
             {
-                Logger.Error("Failed to Get Unity Versions List from " + UnityVersion.UnityURL);
+                Logger.Error($"Failed to Get Unity Versions List from {UnityVersion.UnityURL}");
                 return -1;
             }
 
@@ -102,9 +102,9 @@ namespace UDGB
                     || (version.Version[0] < 5))
                 {
                     if (should_error)
-                        Logger.Error(version.Version + " Has No Android Support Installer!");
+                        Logger.Error($"{version.VersionStr} Has No Android Support Installer!");
                     else
-                        Logger.Warning(version.Version + " Has No Android Support Installer!");
+                        Logger.Warning($"{version.VersionStr} Has No Android Support Installer!");
                     return false;
                 }
             }
@@ -120,13 +120,13 @@ namespace UDGB
                 if (!VersionFilter(version, false))
                     continue;
 
-                string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
+                string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.VersionStr + ".zip"));
                 if (File.Exists(zip_path))
                 {
-                    Logger.Warning(version.Version + " Zip Already Exists! Skipping...");
+                    Logger.Warning($"{version.VersionStr} Zip Already Exists! Skipping...");
                     continue;
                 }
-                Logger.Msg(version.Version + " Zip Doesn't Exist! Adding to Download List...");
+                Logger.Msg($"{version.VersionStr} Zip Doesn't Exist! Adding to Download List...");
                 sortedversiontbl.Add(version);
             }
             int error_count = 0;
@@ -142,13 +142,13 @@ namespace UDGB
                         Logger.Warning("Failure Detected! Skipping to Next Version...");
                         error_count += 1;
                     }
-                    Logger.Msg("Cooldown Active for " + cooldown_interval.ToString() + " seconds...");
+                    Logger.Msg($"Cooldown Active for {cooldown_interval} seconds...");
                     Thread.Sleep(cooldown_interval * 1000);
                 }
                 if (error_count > 0)
-                    Logger.Error(error_count.ToString() + " Failures");
+                    Logger.Error($"{error_count} Failures");
                 if (success_count > 0)
-                    Logger.Msg(success_count.ToString() + " Successful Zip Creations");
+                    Logger.Msg($"{success_count} Successful Zip Creations");
             }
             return (error_count <= 0);
         }
@@ -158,7 +158,7 @@ namespace UDGB
             if (!VersionFilter(version))
                 return false;
 
-            string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.VersionStr + ".zip"));
+            string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{version.VersionStr}.zip");
             if (File.Exists(zip_path))
                 File.Delete(zip_path);
 
@@ -170,7 +170,7 @@ namespace UDGB
                 downloadurl = $"{downloadurl.Substring(0, downloadurl.LastIndexOf("/"))}/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-{version.FullVersionStr}.exe";
             }
 
-            Logger.Msg("Downloading " + downloadurl);
+            Logger.Msg($"Downloading {downloadurl}");
             bool was_error = false;
             try
             {
@@ -200,7 +200,7 @@ namespace UDGB
 
             if (was_error)
                 return false;
-            Logger.Msg(version.VersionStr + " Zip Successfully Created!");
+            Logger.Msg($"{version.VersionStr} Zip Successfully Created!");
             return true;
         }
 
