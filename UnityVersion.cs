@@ -29,27 +29,24 @@ namespace UDGB
                 Version[i] = output;
             }
 
+
             string[] downloadurl_splices = downloadurl.Split('/');
-            if (downloadurl_splices[4].EndsWith(".exe"))
+            if ((Version[0] < 5) 
+                || ((Version[0] == 5) && (Version[1] < 3))
+                || downloadurl_splices[4].EndsWith(".exe"))
             {
-                Logger.DebugMsg($"{version} - {downloadurl}");
+                Logger.DebugMsg($"{VersionStr} - {DownloadURL}");
                 return;
             }
 
             UsePayloadExtraction = true;
             HashStr = downloadurl_splices[4];
-            DownloadURL = $"https://download.unity3d.com/download_unity/{HashStr}/";
-            if ((Version[0] == 5) && Version[1] < 3)
-                DownloadURL += $"MacEditorInstaller/Unity-{FullVersionStr}.pkg";
-            else
-            {
-                DownloadURL += "MacEditorTargetInstaller/UnitySetup-Windows-";
-                if (Version[0] >= 2018)
-                    DownloadURL += "Mono-";
-                DownloadURL += $"Support-for-Editor-{FullVersionStr}.pkg";
-            }
+            DownloadURL = $"https://download.unity3d.com/download_unity/{HashStr}/MacEditorTargetInstaller/UnitySetup-Windows-";
+            if (Version[0] >= 2018)
+                DownloadURL += "Mono-";
+            DownloadURL += $"Support-for-Editor-{FullVersionStr}.pkg";
 
-            Logger.DebugMsg($"{version} - {HashStr} - {downloadurl}");
+            Logger.DebugMsg($"{VersionStr} - {HashStr} - {DownloadURL}");
         }
 
         internal static void Refresh()

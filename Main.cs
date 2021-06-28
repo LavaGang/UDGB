@@ -200,7 +200,7 @@ namespace UDGB
 
             if (was_error)
                 return false;
-            Logger.Msg(version.Version + " Zip Successfully Created!");
+            Logger.Msg(version.VersionStr + " Zip Successfully Created!");
             return true;
         }
 
