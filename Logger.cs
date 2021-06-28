@@ -5,6 +5,11 @@ namespace UDGB
 {
     internal class Logger
     {
+#if DEBUG
+        private static bool DEBUG = true;
+#else
+        private static bool DEBUG = false;
+#endif
         private static bool ShouldLogToFile = true;
         private static FileStream fs = null;
         private static StreamWriter sr = null;
@@ -44,6 +49,21 @@ namespace UDGB
         {
             var oldColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(str);
+            Console.ForegroundColor = oldColor;
+            if (!ShouldLogToFile || (sr == null))
+                return;
+            sr.WriteLine(str);
+            sr.Flush();
+        }
+
+        internal static void DebugMsg(string str)
+        {
+            if (!DEBUG)
+                return;
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Blue;
+            str = $"[DEBUG] {str}";
             Console.WriteLine(str);
             Console.ForegroundColor = oldColor;
             if (!ShouldLogToFile || (sr == null))

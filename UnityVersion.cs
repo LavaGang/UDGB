@@ -6,12 +6,51 @@ namespace UDGB
     {
         internal static List<UnityVersion> VersionTbl = new List<UnityVersion>();
         internal static string UnityURL = "https://unity3d.com/get-unity/download/archive";
-        internal string Version = null;
-        internal string FullVersion = null;
+        internal int[] Version = { 0, 0, 0, 0 };
+        internal string VersionStr = null;
+        internal string FullVersionStr = null;
         internal string DownloadURL = null;
+        internal string HashStr = null;
+        internal bool UsePayloadExtraction = false;
         private static string QuoteStr = "\"";
 
-        internal UnityVersion(string version, string fullversion, string downloadurl) { Version = version; FullVersion = fullversion; DownloadURL = downloadurl; }
+        internal UnityVersion(string version, string fullversion, string downloadurl)
+        {
+            VersionStr = version;
+            FullVersionStr = fullversion;
+            DownloadURL = downloadurl;
+
+            string[] versiontbl = version.Split('.');
+            for (int i = 0; i < versiontbl.Length; i++)
+            {
+                int output = 0;
+                if (!int.TryParse(versiontbl[i], out output))
+                    continue;
+                Version[i] = output;
+            }
+
+            string[] downloadurl_splices = downloadurl.Split('/');
+            if (downloadurl_splices[4].EndsWith(".exe"))
+            {
+                Logger.DebugMsg($"{version} - {downloadurl}");
+                return;
+            }
+
+            UsePayloadExtraction = true;
+            HashStr = downloadurl_splices[4];
+            DownloadURL = $"https://download.unity3d.com/download_unity/{HashStr}/";
+            if ((Version[0] == 5) && Version[1] < 3)
+                DownloadURL += $"MacEditorInstaller/Unity-{FullVersionStr}.pkg";
+            else
+            {
+                DownloadURL += "MacEditorTargetInstaller/UnitySetup-Windows-";
+                if (Version[0] >= 2018)
+                    DownloadURL += "Mono-";
+                DownloadURL += $"Support-for-Editor-{FullVersionStr}.pkg";
+            }
+
+            Logger.DebugMsg($"{version} - {HashStr} - {downloadurl}");
+        }
 
         internal static void Refresh()
         {

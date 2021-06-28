@@ -38,7 +38,7 @@ namespace UDGB
             if (File.Exists(cache_path))
                 File.Delete(cache_path);
 
-            if ((args.Length < 1) || (args.Length > 1) || string.IsNullOrEmpty(args[0]))
+            if ((args.Length < 1) || (args.Length > 2) || string.IsNullOrEmpty(args[0]))
             {
                 Logger.Error("Bad arguments for extractor process; expected arguments: <unityVersion>");
                 return -1;
@@ -63,11 +63,24 @@ namespace UDGB
                 return -1;
             }
 
+            if ((args.Length == 2) && !string.IsNullOrEmpty(args[1]))
+            {
+                UnityVersion version = GetUnityVersionFromString(requested_version);
+                if (version == null)
+                {
+                    Logger.Error($"Failed to Find Unity Version [{requested_version}] in List!");
+                    return -1;
+                }
+                cache_path = args[1];
+                try { return ExtractFilesFromArchive(version) ? 0 : -1; }
+                catch (Exception x) { Logger.Error(x.ToString()); return -1; }
+            }
+
             return (requested_version.StartsWith("--all") ? (ProcessAll() ? 0 : -1) : (ProcessSpecific(requested_version) ? 0 : -1));
         }
 
         private static UnityVersion GetUnityVersionFromString(string requested_version) =>
-            UnityVersion.VersionTbl.FirstOrDefault(x => x.Version.Equals(requested_version));
+            UnityVersion.VersionTbl.FirstOrDefault(x => x.VersionStr.Equals(requested_version) || x.FullVersionStr.Equals(requested_version));
 
         private static bool ProcessSpecific(string requested_version)
         {
@@ -82,25 +95,11 @@ namespace UDGB
 
         private static bool VersionFilter(UnityVersion version, bool should_error = true)
         {
-            if ((version.Version.StartsWith("2020")
-                    && !version.Version.StartsWith("2020.1"))
-                    || version.Version.StartsWith("2021"))
-            {
-                if (should_error)
-                    Logger.Error(version.Version + " is Incompatible with Current Extraction Method!");
-                else
-                    Logger.Warning(version.Version + " is Incompatible with Current Extraction Method!");
-                return false;
-            }
-
             if ((OperationMode == OperationModes.Android_Il2Cpp)
                 || (OperationMode == OperationModes.Android_Mono))
             {
-                if (version.Version.StartsWith("5.2")
-                    || version.Version.StartsWith("5.1")
-                    || version.Version.StartsWith("5.0")
-                    || version.Version.StartsWith("4")
-                    || version.Version.StartsWith("3"))
+                if (((version.Version[0] == 5) && (version.Version[1] <= 2))
+                    || (version.Version[0] < 5))
                 {
                     if (should_error)
                         Logger.Error(version.Version + " Has No Android Support Installer!");
@@ -159,7 +158,7 @@ namespace UDGB
             if (!VersionFilter(version))
                 return false;
 
-            string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.Version + ".zip"));
+            string zip_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (version.VersionStr + ".zip"));
             if (File.Exists(zip_path))
                 File.Delete(zip_path);
 
@@ -168,7 +167,7 @@ namespace UDGB
                 || (OperationMode == OperationModes.Android_Mono))
             {
                 downloadurl = downloadurl.Substring(0, downloadurl.LastIndexOf("/"));
-                downloadurl = $"{downloadurl.Substring(0, downloadurl.LastIndexOf("/"))}/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-{version.FullVersion}.exe";
+                downloadurl = $"{downloadurl.Substring(0, downloadurl.LastIndexOf("/"))}/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-{version.FullVersionStr}.exe";
             }
 
             Logger.Msg("Downloading " + downloadurl);
@@ -187,11 +186,17 @@ namespace UDGB
                 was_error = true;
             }
 
+#if !DEBUG
             Logger.Msg("Cleaning up...");
             if (Directory.Exists(temp_folder_path))
                 Directory.Delete(temp_folder_path, true);
             if (File.Exists(cache_path))
                 File.Delete(cache_path);
+
+            string payload_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Payload~");
+            if (File.Exists(payload_path))
+                File.Delete(payload_path);
+#endif
 
             if (was_error)
                 return false;
@@ -201,28 +206,37 @@ namespace UDGB
 
         private static bool ExtractFilesFromArchive(UnityVersion version)
         {
+            string internal_path = null;
+            string archive_path = cache_path;
             switch (OperationMode)
             {
                 // Unity Dependencies for Unstripping Only
                 case OperationModes.Normal:
                 default:
-                    string internal_path = "Editor/Data/PlaybackEngines/windowsstandalonesupport/Variations/win64_nondevelopment_mono/Data/";
-                    if (version.Version.StartsWith("3."))
+                    if (version.Version[0] == 3)
                         internal_path = "Data/PlaybackEngines/windows64standaloneplayer/";
-                    else if (version.Version.StartsWith("4."))
+                    else if (version.Version[0] == 4)
                     {
-                        if (version.Version.StartsWith("4.5")
-                            || version.Version.StartsWith("4.6")
-                            || version.Version.StartsWith("4.7"))
-                            internal_path = "Data/PlaybackEngines/windowsstandalonesupport/";
+                        if (version.Version[1] >= 5)
+                            internal_path = "Data/PlaybackEngines/windowsstandalonesupport/Variations/win64_nondevelopment/Data/";
                         else
                             internal_path = "Data/PlaybackEngines/windows64standaloneplayer/";
                     }
-                    else if (version.Version.StartsWith("5.3"))
-                        internal_path = "Editor/Data/PlaybackEngines/WebPlayer/";
+                    else if ((version.Version[0] == 5) && (version.Version[1] <= 2))
+                        internal_path = "./Unity/Unity.app/Contents/PlaybackEngines/WindowsStandaloneSupport/Variations/win64_nondevelopment_mono/Data/";
+                    else
+                        internal_path = "./Variations/win64_nondevelopment_mono/Data/";
+
+                    if (version.UsePayloadExtraction)
+                    {
+                        Logger.Msg($"Extracting Payload...");
+                        if (!ArchiveHandler.ExtractFiles(AppDomain.CurrentDomain.BaseDirectory, archive_path, "Payload~"))
+                            return false;
+                        archive_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Payload~");
+                    }
 
                     Logger.Msg("Extracting DLLs from Archive...");
-                    return ArchiveHandler.ExtractFiles(temp_folder_path, cache_path, internal_path + "Managed/*.dll");
+                    return ArchiveHandler.ExtractFiles(temp_folder_path, archive_path, internal_path + "Managed/*.dll");
 
 
                 // Full Android Libraries
@@ -233,7 +247,7 @@ namespace UDGB
                     string libfilename = "libunity.so";
 
                     Logger.Msg($"Extracting {libfilename} from Archive...");
-                    if (!ArchiveHandler.ExtractFiles(temp_folder_path, cache_path, $"{basefolder}Release/Libs/*/{libfilename}", true))
+                    if (!ArchiveHandler.ExtractFiles(temp_folder_path, archive_path, $"{basefolder}Release/Libs/*/{libfilename}", true))
                         return false;
 
                     Logger.Msg("Fixing Folder Structure...");
@@ -260,7 +274,7 @@ namespace UDGB
                     if (!Directory.Exists(newmanagedfolder))
                         Directory.CreateDirectory(newmanagedfolder);
 
-                    return ArchiveHandler.ExtractFiles(newmanagedfolder, cache_path, basefolder + "Managed/*.dll");
+                    return ArchiveHandler.ExtractFiles(newmanagedfolder, archive_path, basefolder + "Managed/*.dll");
             }
         }
     }
