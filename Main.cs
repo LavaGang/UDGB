@@ -46,11 +46,11 @@ namespace UDGB
 
             string requested_version = args[0];
 
-            OperationMode = (requested_version.EndsWith(";android") 
+            OperationMode = (requested_version.EndsWith(";android")
                 || requested_version.EndsWith(";android_il2cpp"))
                 ? OperationModes.Android_Il2Cpp
-                : (requested_version.EndsWith(";android_mono") 
-                ? OperationModes.Android_Mono 
+                : (requested_version.EndsWith(";android_mono")
+                ? OperationModes.Android_Mono
                 : OperationModes.Normal);
 
             if (OperationMode != OperationModes.Normal)
@@ -224,6 +224,8 @@ namespace UDGB
                     }
                     else if ((version.Version[0] == 5) && (version.Version[1] <= 2))
                         internal_path = "./Unity/Unity.app/Contents/PlaybackEngines/WindowsStandaloneSupport/Variations/win64_nondevelopment_mono/Data/";
+                    else if (version.Version[0] > 2021 || (version.Version[0] == 2021 && version.Version[1] >= 2))
+                        internal_path = "./Variations/win64_player_nondevelopment_mono/Data/";
                     else
                         internal_path = "./Variations/win64_nondevelopment_mono/Data/";
 
