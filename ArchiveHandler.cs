@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -13,11 +13,17 @@ namespace UDGB
         private static AutoResetEvent ResetEvent_Output = new AutoResetEvent(false);
         private static AutoResetEvent ResetEvent_Error = new AutoResetEvent(false);
 
-        internal static void CreateZip(string input_folder, string output_file)
+        internal static void CreateZip(string input_folder, string output_file, bool cleanup = false)
         {
             if (File.Exists(output_file))
                 File.Delete(output_file);
             ZipFile.CreateFromDirectory(input_folder, output_file);
+
+            if (cleanup)
+            {
+                if (Directory.Exists(input_folder))
+                    Directory.Delete(input_folder, true);
+            }
         }
 
         internal static bool ExtractFiles(string output_path, string archive_path, string internal_path, bool keep_file_path = false)
