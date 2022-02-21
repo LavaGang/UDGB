@@ -10,15 +10,12 @@ namespace UDGB
         internal static List<UnityVersion> VersionTbl = new List<UnityVersion>();
         internal static string UnityURL = "https://unity3d.com/get-unity/download/archive";
         internal _UnityVersion Version = _UnityVersion.MinVersion;
-        // internal string VersionStr = null;
-        // internal string FullVersionStr = null;
         internal string DownloadURL = null;
         internal string HashStr = null;
         internal bool UsePayloadExtraction = false;
         private static string QuoteStr = "\"";
 
         [Obsolete("VersionStr is deprecated, please use Version.ToStringWithoutType() instead.")]
-
         internal string VersionStr => Version.ToStringWithoutType();
         [Obsolete("FullVersionStr is deprecated, please use Version.ToString() instead.")]
         internal string FullVersionStr => Version.ToString();
@@ -26,20 +23,6 @@ namespace UDGB
         internal UnityVersion(string fullversion, string downloadurl)
         {
             Version = _UnityVersion.Parse(fullversion);
-            // VersionStr = version;
-            // FullVersionStr = fullversion;
-            // DownloadURL = downloadurl;
-            //
-            // string[] versiontbl = version.Split('.');
-            // for (int i = 0; i < versiontbl.Length; i++)
-            // {
-            //     int output = 0;
-            //     if (!int.TryParse(versiontbl[i], out output))
-            //         continue;
-            //     Version[i] = output;
-            // }
-            // Version.ToString()
-
 
             string[] downloadurl_splices = downloadurl.Split('/');
             if (Version < _UnityVersion.Parse("5.3.99") || downloadurl_splices[4].EndsWith(".exe"))
