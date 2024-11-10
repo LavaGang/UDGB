@@ -1,6 +1,5 @@
 ﻿using AssetRipper.Primitives;
 using n1685.Utilities.Extensions;
-using PuppeteerSharp;
 
 namespace UDGB
 {
