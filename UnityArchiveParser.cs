@@ -15,21 +15,23 @@ namespace UDGB
             if (string.IsNullOrEmpty(pageSource))
                 return null;
 
-            string target = "unityhub://";
-            HashSet<UnityVersion> returnVal = new();
+            string target = "unityHubDeepLink\\\":\\\"unityhub://";
 
-            string[] pageLines = pageSource.Split('\n');
-            foreach (string line in pageLines)
+            HashSet<UnityVersion> returnVal = new();
+            int next;
+            while ((next = pageSource.IndexOf(target)) != -1)
             {
-                if (string.IsNullOrEmpty(line)
-                    || string.IsNullOrEmpty(line)
-                    || !line.Contains(target))
+                pageSource = pageSource.Substring(next + target.Length);
+                int end = pageSource.IndexOf("\\\"");
+
+                if (end == -1)
                     continue;
 
-                int indexOf = line.IndexOf(target);
-                string subLine = line.Substring(indexOf + target.Length);
-                int end = pageSource.IndexOf("\\");
-                string foundVersion = line.Substring(0, end);
+                string url = pageSource.Substring(0, end);
+
+                string[] parts = url.Split('/');
+                string foundVersion = parts[0];
+                //string hash = parts[1];
 
                 UnityVersion version = UnityVersion.Parse(foundVersion);
                 if (returnVal.Contains(version))
