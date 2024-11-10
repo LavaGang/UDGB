@@ -152,13 +152,13 @@ namespace UDGB
             if (File.Exists(zip_path))
                 File.Delete(zip_path);
 
-            string[]? downloadurls = UnityArchiveParser.GetDownloads(version, UnityArchiveParser.ePlatform.WINDOWS) ?? null;
+            string[]? downloadurls = UnityArchiveParser.GetDownloads(version, UnityArchiveParser.ePlatform.MACOS) ?? null;
             if (downloadurls == null)
             {
                 Logger.Error($"Failed to get Downloads from Unity Version {version.ToStringWithoutType()}");
                 return false;
             }
-            string downloadUrl = downloadurls[0];
+            string downloadUrl = downloadurls.First((x) => x.Contains("UnitySetup-Windows-Mono-Support-for-Editor"));
             if ((OperationMode == OperationModes.Android_Il2Cpp)
                 || (OperationMode == OperationModes.Android_Mono))
                 downloadUrl = downloadurls.First((x) => x.Contains("UnitySetup-Android-Support-for-Editor"));
@@ -224,7 +224,7 @@ namespace UDGB
 
                     if ((version.Major < 5)
                         || ((version.Major == 5) && (version.Minor < 3))
-                        || downloadUrl.EndsWith(".exe"))
+                        || downloadUrl.EndsWith(".pkg"))
                     {
                         Logger.Msg($"Extracting Payload...");
                         if (!ArchiveHandler.ExtractFiles(AppDomain.CurrentDomain.BaseDirectory, archive_path, "Payload~"))
